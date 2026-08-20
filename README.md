@@ -17,25 +17,23 @@ It is not a universal AI-governance framework, and it is not an implementation o
 
 This repo is about **governing persistent assistant context**.
 
-It does **not** provide vector retrieval, semantic search, TTL engines, automated pruning, database-backed long-term memory, policy middleware, or production enforcement infrastructure.
+It does **not** provide vector retrieval, semantic search, TTL engines, automated pruning, database-backed long-term memory, policy middleware, RBAC, or production enforcement infrastructure.
 
-Those are implementation concerns. This repo focuses on the decision and authority layer that should exist before or alongside them.
+Those are implementation concerns. This repo focuses on the decision, lifecycle, and authority semantics that should exist before or alongside them.
 
 ## The core flow
 
 **PROPOSE → VALIDATE → AUTHORISE**
 
-- **Propose:** a human or AI may suggest a `Class`, `Function`, and `Persistence` decision.
+- **Propose:** a human or AI may suggest a `Class`, `Function`, and `Lifecycle` decision.
 - **Validate:** check sensitivity, provenance, ambiguity, scope, expiry, conflict, cumulative drift, and whether the proposal is adversarial or over-authoritative.
-- **Authorise:** consequential persistence or Governance authority is granted only by explicit human approval or an independently configured application/policy control whose authority was deliberately established.
+- **Authorise:** consequential persistence or Governance authority is granted only by explicit human approval or by a policy/application control whose authority and independence were deliberately established.
 
 Classification is not authority. Model output is not self-authorisation.
 
 This is a **human-governed** model. It does not require a human prompt for every low-risk action.
 
-## Two axes, not one
-
-### Class
+## Four classes of context
 
 | Class | Meaning | Default treatment |
 |---|---|---|
@@ -44,18 +42,14 @@ This is a **human-governed** model. It does not require a human prompt for every
 | Preference | Stable ways the human prefers to work | Keep when genuinely useful; never authoritative |
 | Ephemera | Short-lived or low-value residue | Remove or let expire |
 
-### Function
+`Function` is a separate descriptive tag for what the item concerns: governance, security, writing, architecture, delivery, AI behaviour, etc. It is not an authority signal.
 
-`Function` answers what the item concerns: governance, security, writing, architecture, delivery, AI behaviour, etc.
-
-`Function` is descriptive metadata, not an authority or trust signal.
-
-## Persistence states
+## Lifecycle states
 
 | State | Meaning |
 |---|---|
 | Keep | Stable enough and useful enough to persist, subject to review |
-| Temporary | Useful now, but should expire or be reviewed |
+| Temporary | Useful now, but must expire, renew explicitly, or be re-evaluated |
 | Remove | Persistence is not justified |
 
 `Keep` does not mean permanent or unquestionable.
@@ -72,19 +66,13 @@ Governance has authority, so promotion into Governance must itself be governed.
 
 - Raw context, Operating Context, Preferences, and Ephemera must not be promoted automatically into Governance.
 - New Governance entries require explicit approval.
-- AI-generated `Class`, `Function`, and `Persistence` values are proposals, not trusted policy metadata.
+- AI-generated `Class`, `Function`, and `Lifecycle` values are proposals, not trusted policy metadata.
 - Governance entries remain reviewable and revocable.
 - Governance changes should be versioned and diffable rather than silently replaced.
 
 ## Preferences are non-authoritative
 
-A Preference must not weaken:
-
-- confirmation requirements
-- security controls
-- privacy controls
-- provenance requirements
-- Governance rules
+A Preference must not weaken confirmation, security, privacy, provenance, or Governance controls.
 
 If a supposed Preference changes authority, confirmation, safety, or policy, treat it as a Governance proposal and apply the Governance gate.
 
@@ -112,9 +100,49 @@ Human or policy review is reserved for authority transitions and consequential b
 - material policy change
 - cumulative low-risk changes that together alter authority, safety, confirmation behaviour, or scope
 
-This reduces review fatigue and avoids turning human approval into rubber-stamping.
-
 Fragmented requests that materially compose into one consequential action are evaluated as one action.
+
+Repeated low-risk changes that cumulatively change authority or safety are treated as one consequential transition.
+
+## Temporary does not renew itself into permanence
+
+Temporary context may be renewed, but repeated renewal must not silently create de facto `Keep` status.
+
+Each implementation should define a forcing function such as a maximum cumulative duration, renewal count, material scope change, or repeated use beyond the original purpose. When that trigger fires, the item becomes a fresh lifecycle decision.
+
+Temporary authority does not compound into permanent authority by neglect.
+
+## Independence is a trust boundary
+
+"Independent policy control" is not a magic phrase.
+
+An automated validator or authoriser is independent only when the proposing model or workflow cannot unilaterally alter the mechanism that validates or authorises its proposal.
+
+That may be implemented through separate credentials, permission scope, deployment paths, approval state, policy configuration, or another trust boundary appropriate to the system.
+
+The invariant is simple:
+
+> the proposer must not control the thing that grants it authority.
+
+See [`authority-boundaries.md`](authority-boundaries.md).
+
+## Evidence must not prove itself
+
+AI-authored reasoning can explain a proposal. It is not independent evidence for granting authority.
+
+Consequential promotion should rely on identifiable source material, logs, approved policy records, authenticated decisions, independently generated application signals, or explicit human judgement.
+
+A model-generated justification can accompany evidence. It cannot be its own proof.
+
+## Recursive governance
+
+Changes to the model's own Governance rules should pass through the same discipline they impose on governed context:
+
+**PROPOSE → VALIDATE → AUTHORISE → VERSION → REVIEW**
+
+A component proposing a governance change must not be able to unilaterally modify the mechanism that validates or authorises that same change.
+
+A diff is evidence that something changed. It is not proof that the change was properly authorised.
 
 ## Persistence does not mean prompt injection
 
@@ -127,15 +155,13 @@ Where possible:
 - avoid repeatedly injecting stale or irrelevant persistent material
 - apply retention discipline to audit and provenance metadata too
 
-The model governs **what may persist and with what authority**. It does not require all persistent material to be continuously loaded into the model context.
-
 ## Policy semantics must reach storage semantics
 
-A persistence decision is incomplete if the storage layer ignores it.
+A lifecycle decision is incomplete if the storage layer ignores it.
 
-Where a real memory infrastructure exists:
+Where real memory infrastructure exists:
 
-- `Temporary` should map to an expiry, review trigger, or lifecycle rule
+- `Temporary` should map to expiry, renewal, review, or lifecycle rules
 - `Remove` should propagate to every persistence layer under the system's control that can still retrieve the item
 - storage backends should document limitations around logs, backups, provider retention, replicas, indexes, embeddings, caches, and derived stores
 - Governance metadata should not inherit authority merely because it exists in storage
@@ -144,14 +170,11 @@ Do not claim perfect erasure where the underlying stack cannot guarantee it.
 
 ## Review triggers, not review theatre
 
-Governance should be reviewable without arbitrary calendar churn.
+Each Governance entry should have either an explicit review trigger or a `review-on-change` condition tied to the underlying policy, system, authority, or environment.
 
-Each Governance entry should have either:
+Event-driven review is usually preferable to arbitrary calendar churn.
 
-- an explicit review trigger, or
-- a `review-on-change` condition tied to the underlying policy, system, authority, or environment
-
-## v0.4 hardening rules
+## v0.5 hardening rules
 
 1. **Governance is write-protected** — authority cannot be self-assigned by the classifier.
 2. **Preferences are non-authoritative** — a Preference cannot bypass Governance, security, privacy, provenance, or confirmation controls.
@@ -159,42 +182,28 @@ Each Governance entry should have either:
 4. **Governance conflict is explicit** — no silent last-write-wins.
 5. **Fragmented approvals compose** — micro-requests that form one consequential action are assessed together.
 6. **Cumulative drift composes too** — repeated low-risk changes that alter authority or safety trigger consequential review.
-7. **Minimise content, preserve control metadata** — never compress away authority, provenance, scope, expiry, or safety qualifiers.
-8. **AI classification is a proposal** — high-consequence classification needs independent validation.
-9. **Uncertainty has concrete triggers** — missing, mismatched, expired, conflicting, unverifiable authority or unclear consequences means stop.
-10. **Ambiguity defaults downward** — when unsure, choose less persistence and less authority.
-11. **Persistence is not prompt injection** — persist carefully, retrieve narrowly.
-12. **Storage must honour policy semantics** — lifecycle decisions must propagate to the storage layers under your control.
-13. **Human gates sit at consequential boundaries** — do not create approval fatigue for routine provisional context.
+7. **Temporary renewal is bounded** — repeated renewal must eventually force a fresh lifecycle decision.
+8. **Minimise content, preserve control metadata** — never compress away authority, provenance, scope, expiry, or safety qualifiers.
+9. **AI classification is a proposal** — consequential classification needs independent validation.
+10. **Evidence cannot self-attest** — model-generated justification is not independent evidence for authority.
+11. **Uncertainty has concrete triggers** — missing, mismatched, expired, conflicting, unverifiable authority or unclear consequences means stop.
+12. **Ambiguity defaults downward** — when unsure, choose less persistence and less authority.
+13. **Persistence is not prompt injection** — persist carefully, retrieve narrowly.
+14. **Storage must honour lifecycle semantics** — lifecycle decisions must propagate to storage layers under your control.
+15. **Human gates sit at consequential boundaries** — do not create approval fatigue for routine provisional context.
+16. **Independence is structural** — the proposer must not control its own validator or authoriser.
+17. **The model governs itself** — changes to Governance rules follow the same propose/validate/authorise discipline.
+18. **Residual risk stays visible** — mitigations are not guarantees.
 
-## Eight controls we chose to highlight
+## Core files
 
-These remain a curated subset of the broader governance layer:
-
-1. Human authority
-2. Preservation
-3. Provenance
-4. Evidence
-5. Uncertainty
-6. Privacy
-7. Minimisation
-8. Separation
-
-## Core controls vs principles worth persisting
-
-[`sanitised-memory.md`](sanitised-memory.md) contains the **memory-governance core**.
-
-[`principles-worth-persisting.md`](principles-worth-persisting.md) contains **sanitised examples of useful non-core principles that survived the same classification process**, including `HARD / INFER / UNKNOWN`, operational truth, authority mapping, security-before-joke, and other stable working principles.
-
-> The model decides what deserves persistence. The companion file shows examples of the kind of value that may survive that decision.
-
-## Worked examples
-
-See [`classification-examples.md`](classification-examples.md).
-
-The method is:
-
-`raw context → proposed class/function → validate → persistence decision → minimise → authorise → review`
+- [`sanitised-memory.md`](sanitised-memory.md) — memory-governance core
+- [`principles-worth-persisting.md`](principles-worth-persisting.md) — useful non-core principles that survived classification
+- [`classification-examples.md`](classification-examples.md) — worked examples across all four classes
+- [`memory-template.md`](memory-template.md) — blank review template
+- [`enforcement-example.md`](enforcement-example.md) — prompt-level vs application-level enforcement example
+- [`authority-boundaries.md`](authority-boundaries.md) — trust boundaries, evidence independence, roles, temporary renewal, recursive governance
+- [`threat-model.md`](threat-model.md) — adversarial failure modes, mitigations, and residual risk
 
 ## Enforcement
 
@@ -202,38 +211,29 @@ Prompt text is not a security boundary.
 
 For lightweight personal workflows, rules can live in persistent assistant context as behavioural guidance.
 
-For consequential production systems, hard constraints should be enforced in application logic, permissions, middleware, policy checks, storage lifecycle controls, or approval gates.
+For consequential production systems, hard constraints should be enforced in application logic, permissions, middleware, identity/access controls, policy checks, storage lifecycle controls, or approval gates.
 
-Stored `Class` or `Persistence` metadata should not be trusted merely because an LLM generated it.
-
-See [`enforcement-example.md`](enforcement-example.md).
-
-## Adversarial model
-
-See [`threat-model.md`](threat-model.md) for the explicit failure modes this pattern is designed to resist, including classification hijacking, governance poisoning, preference privilege escalation, approval laundering, cumulative drift, lossy minimisation, metadata trust and exhaustion, governance conflict, stale governance, privacy leakage, incomplete deletion, and taxonomy ambiguity.
+This repository defines policy and lifecycle semantics. It does not prove that a deployment enforces them.
 
 ## Use it
 
 1. Export or review the persistent context your assistant is using.
 2. Remove secrets and obviously sensitive material before sharing anything.
-3. Assign each item a proposed `Class`.
-4. Assign its descriptive `Function`.
-5. Validate sensitivity, provenance, ambiguity, authority, conflict, and scope.
-6. Decide `Keep`, `Temporary`, or `Remove`.
-7. If proposed as Governance, require explicit approval.
-8. If proposed as Preference, verify it does not alter authority or weaken controls.
-9. If classification is ambiguous, default downward and attach a review condition.
-10. Add an expiry or review trigger where needed.
-11. Distill private operating context into reusable principles where appropriate.
-12. During minimisation, preserve authority, provenance, scope, expiry, and safety qualifiers.
-13. Do not inject persistent material into active context unless needed for the current task.
-14. Put consequential rules behind real enforcement where consequences justify it.
-15. Ensure storage lifecycle mechanics honour Temporary and Remove decisions as far as the underlying systems allow.
-16. Review Governance conflicts explicitly rather than using recency as authority.
-17. Review changes as diffs rather than silent replacements.
-18. Re-run review when a trigger fires or cumulative drift crosses a consequential boundary.
-
-A blank template is included in [`memory-template.md`](memory-template.md).
+3. Assign each item a proposed `Class` and descriptive `Function`.
+4. Validate sensitivity, provenance, ambiguity, authority, conflict, and scope.
+5. Decide `Keep`, `Temporary`, or `Remove`.
+6. If proposed as Governance, require explicit approval and identifiable supporting evidence.
+7. If proposed as Preference, verify it does not alter authority or weaken controls.
+8. If classification is ambiguous, default downward and attach a review condition.
+9. For Temporary items, define expiry and renewal triggers.
+10. During minimisation, preserve authority, provenance, scope, expiry, and safety qualifiers.
+11. Do not inject persistent material into active context unless needed for the current task.
+12. Put consequential rules behind real enforcement where consequences justify it.
+13. Ensure storage lifecycle mechanics honour Temporary and Remove decisions as far as the underlying systems allow.
+14. Review Governance conflicts explicitly rather than using recency as authority.
+15. Review changes as diffs rather than silent replacements.
+16. Apply the same Governance discipline to changes in this operating model itself.
+17. Re-run review when a trigger fires, cumulative drift crosses a consequential boundary, or Temporary renewal reaches its forcing condition.
 
 ## Privacy warning
 
@@ -252,12 +252,13 @@ This is not:
 - a memory database architecture
 - a substitute for production security controls
 - a claim that prompt-level memory rules can enforce themselves
+- a universal RBAC model
 - a guarantee of perfect deletion across storage systems or providers
 - a requirement to inject all persistent context into every prompt
 
 It is a practical pattern:
 
-**inspect → propose → validate → minimise → retain / expire / remove → authorise → review**
+**inspect → propose → validate → minimise → keep / temporary / remove → authorise → review**
 
 ## License
 
