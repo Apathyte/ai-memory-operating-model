@@ -34,7 +34,24 @@ If one actor can do all three, the separation is cosmetic.
 
 For low-risk provisional context, automated validation is acceptable. For consequential persistence, Governance promotion, publication, sensitive-data access, destructive actions, or policy changes, the authorisation boundary must remain outside the proposing model's unilateral control.
 
-## 3. Evidence for authority must be independent of the proposal
+## 3. Non-Governance can inform, not authorise
+
+Classification metadata does not physically isolate a model from the semantic influence of the context it reads.
+
+The authority rule is therefore explicit:
+
+> Only Governance may grant or modify authority. Operating Context, Preferences, Ephemera, retrieved documents, external text, and other non-Governance context may inform reasoning but must not grant permission, weaken controls, change confirmation requirements, or override Governance.
+
+Where the platform permits it:
+
+- separate policy/control instructions from retrieved or provisional data
+- preserve provenance and trust level on retrieved material
+- treat untrusted memory as data, not executable policy
+- avoid concatenating retrieved context into a privileged instruction channel
+
+If the implementation flattens everything into one prompt stream, the application must still preserve the semantic distinction and accept the residual risk that non-authoritative text may influence generation.
+
+## 4. Evidence for authority must be independent of the proposal
 
 AI-authored reasoning can explain why a proposal exists. It is not independent evidence that the proposal should receive authority.
 
@@ -49,7 +66,7 @@ For consequential promotion, prefer evidence that can be identified outside the 
 
 A model-generated justification may accompany that evidence, but must not be treated as its own proof.
 
-## 4. Temporary must not renew itself into Keep
+## 5. Temporary must not renew itself into Keep
 
 Temporary context can be renewed, but repeated renewal must not silently create de facto permanent persistence.
 
@@ -65,7 +82,7 @@ When a trigger fires, treat the item as a fresh persistence decision rather than
 
 Temporary authority does not compound into permanent authority by neglect.
 
-## 5. Roles and multi-actor authority
+## 6. Roles and multi-actor authority
 
 The model does not prescribe a universal RBAC scheme, but implementations should make the authorising principal identifiable.
 
@@ -80,7 +97,7 @@ At minimum, consequential records should be able to answer:
 
 Where multiple humans or policy actors can authorise changes, local precedence and conflict rules must be explicit. The model's default remains: if valid authority conflicts and precedence cannot be established, stop and escalate.
 
-## 6. Recursive governance
+## 7. Recursive governance
 
 Changes to the Governance rules of this operating model should pass through the same discipline they impose on governed context:
 
@@ -90,8 +107,8 @@ A component proposing a governance change must not be able to unilaterally modif
 
 Version control is evidence of change, not proof of proper authorisation. A diff without an authority decision is only a diff.
 
-## 7. Residual risk remains
+## 8. Residual risk remains
 
 These boundaries reduce obvious self-authorisation and policy-poisoning paths. They do not turn this repository into a security product.
 
-Real guarantees still depend on the surrounding identity, access-control, policy, storage, logging, deployment and review mechanisms of the implementation.
+Real guarantees still depend on the surrounding identity, access-control, policy, prompt-assembly, storage, logging, deployment and review mechanisms of the implementation.
