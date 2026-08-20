@@ -12,7 +12,15 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** a weak or compromised validator can still accept a bad proposal.
 
-## 2. Governance poisoning
+## 2. Non-Governance execution influence
+
+**Risk:** content classified as Preference, Operating Context, or other non-Governance data still influences model generation when injected into active context. A label alone does not neutralise token-level influence.
+
+**Mitigation:** only Governance may grant or modify authority. Non-Governance context may inform reasoning but must not grant permission, weaken confirmation or safety controls, override Governance, or become authoritative merely because it is retrieved. Where possible, keep untrusted/provisional data structurally separate from policy/control instructions.
+
+**Residual risk:** some model interfaces ultimately flatten instructions and data into one context stream, so implementation discipline and prompt assembly remain load-bearing.
+
+## 3. Governance poisoning
 
 **Risk:** a malicious or mistaken item enters Governance and inherits long-lived authority.
 
@@ -20,7 +28,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** the authorisation mechanism itself may be compromised or misconfigured.
 
-## 3. Validator/authoriser collapse
+## 4. Validator/authoriser collapse
 
 **Risk:** the same AI-controlled authority channel proposes, validates, and authorises a consequential change.
 
@@ -28,15 +36,15 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** actual separation depends on deployment architecture, identity, credentials, and change control outside this repo.
 
-## 4. Preference privilege escalation
+## 5. Preference privilege escalation
 
 **Risk:** an authority or safety change is reframed as a harmless Preference, for example: "I prefer outputs that skip confirmation checks."
 
 **Mitigation:** Preferences are non-authoritative. If a Preference would weaken confirmation, security, privacy, provenance, or Governance controls, it becomes a Governance proposal.
 
-**Residual risk:** subtle behavioural changes can be hard to recognise as authority changes.
+**Residual risk:** subtle behavioural changes can be hard to recognise as authority changes, and non-Governance text can still influence generation if prompt assembly is careless.
 
-## 5. Approval laundering, salami attacks, cumulative drift, and human fatigue
+## 6. Approval laundering, salami attacks, cumulative drift, and human fatigue
 
 **Risk:** one consequential change is split into many harmless-looking micro-changes, or high proposal volume turns review into rubber-stamping.
 
@@ -44,7 +52,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** cumulative tracking and trigger thresholds are implementation-specific and can be incomplete across long time horizons.
 
-## 6. Temporary-renewal laundering
+## 7. Temporary-renewal laundering
 
 **Risk:** Temporary context is repeatedly renewed until it becomes de facto permanent without ever receiving a fresh Keep decision.
 
@@ -52,7 +60,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** weak renewal policies can still permit indefinite retention by neglect.
 
-## 7. Lossy minimisation
+## 8. Lossy minimisation
 
 **Risk:** summarisation removes the authority, provenance, scope, expiry, or safety qualifier that made the original context safe.
 
@@ -60,7 +68,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** deciding which qualifiers are safety-critical still requires judgement.
 
-## 8. Metadata trust and metadata exhaustion
+## 9. Metadata trust and metadata exhaustion
 
 **Risk:** an application trusts AI-generated `Class`, `Function`, or `Lifecycle` metadata, or accumulated audit metadata bloats active context.
 
@@ -68,7 +76,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** implementation mistakes can still over-trust stored metadata or over-inject it.
 
-## 9. False certainty
+## 10. False certainty
 
 **Risk:** an agent acts despite ambiguous authority.
 
@@ -76,7 +84,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** the agent may fail to detect that a stop condition exists.
 
-## 10. Governance conflict and multi-actor disagreement
+## 11. Governance conflict and multi-actor disagreement
 
 **Risk:** two individually valid Governance rules or authorisers conflict across humans, sessions, or policy changes.
 
@@ -84,7 +92,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** local role and RBAC models remain implementation-specific.
 
-## 11. Self-referential evidence
+## 12. Self-referential evidence
 
 **Risk:** the AI proposes a consequential change and then cites its own generated justification as the evidence that the change should be authorised.
 
@@ -92,7 +100,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** source material can itself be wrong, poisoned, stale, or misleading.
 
-## 12. False retrieval or provenance
+## 13. False retrieval or provenance
 
 **Risk:** an assistant claims to have retrieved or verified material when it reconstructed it from memory or model knowledge.
 
@@ -100,7 +108,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** source identification does not itself prove source quality.
 
-## 13. Stale Governance
+## 14. Stale Governance
 
 **Risk:** a once-valid rule remains active after policy, authority, environment, or system assumptions change.
 
@@ -108,7 +116,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** a relevant change may occur without firing the chosen trigger.
 
-## 14. Privacy and mosaic leakage
+## 15. Privacy and mosaic leakage
 
 **Risk:** individually harmless facts combine into identifying customer, organisational, personal, or infrastructure detail.
 
@@ -116,7 +124,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** mosaic identification is contextual and cannot be reduced to a perfect checklist.
 
-## 15. Context-window tax
+## 16. Context-window tax
 
 **Risk:** policy, provenance, expiry, approval, and lifecycle metadata is repeatedly injected into active prompts, increasing latency/cost and reducing reasoning space.
 
@@ -124,7 +132,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** some decisions genuinely require substantial control context.
 
-## 16. Storage-policy disconnect and incomplete deletion
+## 17. Storage-policy disconnect and incomplete deletion
 
 **Risk:** the policy says Temporary or Remove while embeddings, indexes, caches, replicas, derived stores, logs, backups, or provider-held copies remain retrievable or retained.
 
@@ -132,7 +140,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** data outside the system's control may remain retained according to external capabilities and policies.
 
-## 17. Taxonomy ambiguity
+## 18. Taxonomy ambiguity
 
 **Risk:** real context sits between classes and the classifier chooses a more persistent or more authoritative interpretation.
 
@@ -140,7 +148,7 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 **Residual risk:** ambiguity cannot be eliminated; the default only makes the error safer.
 
-## 18. Recursive governance / control-plane compromise
+## 19. Recursive governance / control-plane compromise
 
 **Risk:** a compromised deployment or maintainer edits the Governance rules, validator, or authorisation mechanism itself instead of attacking governed memory directly.
 
