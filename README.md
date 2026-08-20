@@ -30,10 +30,6 @@ Those are implementation concerns. This repo focuses on the decision layer that 
 
 ## Two axes, not one
 
-The original mistake was treating everything in one table as if it belonged to one taxonomy.
-
-It does not.
-
 ### Class
 `Class` answers:
 
@@ -41,7 +37,7 @@ It does not.
 
 | Class | Meaning | Default treatment |
 |---|---|---|
-| Governance | Rules the assistant should obey | Keep deliberately |
+| Governance | Rules the assistant should obey | Human-approved, versioned, reviewable |
 | Operating Context | Facts needed to do useful work | Keep while relevant |
 | Preference | Stable ways the human prefers to work | Keep when genuinely useful |
 | Ephemera | Short-lived or low-value residue | Remove or let expire |
@@ -53,77 +49,79 @@ It does not.
 
 Examples include governance, security, writing, architecture, delivery, or AI behaviour.
 
-A memory item can therefore be:
-
-- `Class = Governance`
-- `Function = Security`
-
-without contradiction.
+`Function` is descriptive metadata, not an authority or trust signal.
 
 ## Persistence states
 
-Every item should also receive a persistence decision:
-
 | State | Meaning |
 |---|---|
-| Keep | Stable enough and useful enough to persist |
+| Keep | Stable enough and useful enough to persist, subject to review |
 | Temporary | Useful now, but should expire or be reviewed |
 | Remove | Persistence is not justified |
 
+`Keep` does not mean permanent or unquestionable.
+
+## Governance is write-protected
+
+Governance has authority, so promotion into Governance must itself be governed.
+
+- Raw context, Operating Context, Preferences, and Ephemera **must not be promoted automatically into Governance**.
+- New Governance entries require explicit human approval.
+- AI-generated `Class`, `Function`, and `Persistence` values are proposals, not trusted policy metadata.
+- Governance entries must remain reviewable and revocable.
+- Governance changes should be versioned and diffable rather than silently replaced.
+
+## Seven hardening rules
+
+1. **Governance is write-protected**  
+   Authority cannot be self-assigned by the classifier.
+
+2. **Governance remains reviewable**  
+   `Keep` does not mean forever or beyond challenge.
+
+3. **Fragmented approvals compose**  
+   Multiple small requests that materially form one consequential action must be assessed as one action.
+
+4. **Minimise content, preserve control metadata**  
+   Minimisation must not discard authority, provenance, scope, expiry, or safety-critical qualifiers.
+
+5. **AI classification is a proposal**  
+   High-consequence classification needs independent human or application-side validation.
+
+6. **Uncertainty has concrete triggers**  
+   Stop when approval is missing, out of scope, expired, conflicting, unverifiable, or consequences cannot be established confidently.
+
+7. **Governance changes are auditable**  
+   Prefer a visible diff and approval trail over silent mutation.
+
 ## Eight controls we chose to highlight
 
-These are **not the entire dataset**. They are the clearest reusable controls from the surviving governance layer.
+These remain a curated subset of the broader governance layer:
 
-1. **Human authority**  
-   Availability of a tool is not permission to use it.
-
-2. **Preservation**  
-   An improvement that destroys information is not automatically an improvement.
-
-3. **Provenance**  
-   Never invent where a fact, decision, or execution came from.
-
-4. **Evidence**  
-   Retrieve approved material before reconstructing it from memory.
-
-5. **Uncertainty**  
-   Unknown authority means stop, not infer permission.
-
-6. **Privacy**  
-   Operationally useful does not automatically mean appropriate for persistent memory.
-
-7. **Minimisation**  
-   Short-lived context should not quietly become identity.
-
-8. **Separation**  
-   Governance, facts, preferences, and transient context are different classes.
+1. Human authority
+2. Preservation
+3. Provenance
+4. Evidence
+5. Uncertainty
+6. Privacy
+7. Minimisation
+8. Separation
 
 ## Core controls vs principles worth persisting
 
-The repo deliberately keeps two different outputs separate.
+[`sanitised-memory.md`](sanitised-memory.md) contains the **memory-governance core**.
 
-[`sanitised-memory.md`](sanitised-memory.md) contains the **memory-governance core**: controls directly related to persistence, authority, privacy, provenance, evidence, retrieval, capability honesty, and consequential action.
-
-[`principles-worth-persisting.md`](principles-worth-persisting.md) contains **sanitised examples of useful non-core principles that survived the same classification process**. These include things like `HARD / INFER / UNKNOWN`, operational truth, authority mapping, security-before-joke, and other stable working principles.
-
-That separation is intentional:
+[`principles-worth-persisting.md`](principles-worth-persisting.md) contains **sanitised examples of useful non-core principles that survived the same classification process**, including `HARD / INFER / UNKNOWN`, operational truth, authority mapping, security-before-joke, and other stable working principles.
 
 > The model decides what deserves persistence. The companion file shows examples of the kind of value that may survive that decision.
-
-This keeps the taxonomy clean without throwing away useful context simply because it is not itself a memory-governance control.
 
 ## Worked examples
 
 See [`classification-examples.md`](classification-examples.md).
 
-That file shows the actual method:
+The method is:
 
-`raw memory → assessment → class → persistence decision → public form`
-
-It includes examples of:
-- a governance rule that should remain
-- customer-specific operating context that should not remain in raw form
-- one-off ephemera that should be removed
+`raw memory → assessment → class → function → persistence decision → public/minimised form`
 
 ## Enforcement
 
@@ -133,19 +131,28 @@ For lightweight personal workflows, a rule can live in persistent assistant cont
 
 For consequential production systems, hard constraints should be enforced in application logic, permissions, middleware, policy checks, or approval gates.
 
+Stored `Class` or `Persistence` metadata should not be trusted merely because an LLM generated it.
+
 See [`enforcement-example.md`](enforcement-example.md).
+
+## Adversarial model
+
+See [`threat-model.md`](threat-model.md) for the explicit failure modes this pattern is designed to resist, including classification hijacking, governance poisoning, approval laundering, lossy minimisation, metadata trust, and stale governance.
 
 ## Use it
 
 1. Export or review the persistent context your assistant is using.
 2. Remove secrets and obviously sensitive material before sharing anything.
-3. Assign each item a `Class`.
+3. Assign each item a proposed `Class`.
 4. Assign its `Function`.
 5. Decide `Keep`, `Temporary`, or `Remove`.
-6. Add an expiry/review condition where needed.
-7. Distill private operating context into reusable principles where appropriate.
-8. Put consequential rules behind real enforcement where consequences justify it.
-9. Re-run the review periodically.
+6. If proposed as Governance, require explicit human approval.
+7. Add an expiry or review condition where needed.
+8. Distill private operating context into reusable principles where appropriate.
+9. During minimisation, preserve authority, provenance, scope, expiry, and safety qualifiers.
+10. Put consequential rules behind real enforcement where consequences justify it.
+11. Review changes as diffs rather than silent replacements.
+12. Re-run the review periodically.
 
 A blank template is included in [`memory-template.md`](memory-template.md).
 
@@ -153,13 +160,7 @@ A blank template is included in [`memory-template.md`](memory-template.md).
 
 **Do not publish a raw memory dump.**
 
-Useful memory can still contain:
-- personal information
-- customer-identifying detail
-- internal politics
-- security-adjacent facts
-- infrastructure details
-- accidental mosaics that identify people or organisations when combined
+Useful memory can still contain personal information, customer-identifying detail, internal politics, security-adjacent facts, infrastructure details, or accidental mosaics that identify people or organisations when combined.
 
 Sanitise first. Publish second.
 
@@ -170,10 +171,11 @@ This is not:
 - a complete AI policy framework
 - a memory database architecture
 - a substitute for production security controls
+- a claim that prompt-level memory rules can enforce themselves
 
 It is a practical pattern:
 
-**inspect → classify → minimise → retain / expire / remove → govern**
+**inspect → classify → validate → minimise → retain / expire / remove → govern → review**
 
 ## License
 
