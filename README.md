@@ -82,6 +82,14 @@ Where the platform allows it, keep untrusted or provisional context structurally
 
 Do not convert retrieved context into privileged instructions merely by concatenating it into a prompt.
 
+### Low persistence is not low injection risk
+
+Ephemera and provisional Operating Context may be short-lived, but they can still contain adversarial instructions while active.
+
+Treat untrusted Ephemera and provisional context as **data by default, not instructions**. Their low persistence must not reduce injection scrutiny, grant them execution authority, or let them bypass the same active-context trust boundary applied to other non-Governance material.
+
+Disposable does not mean harmless.
+
 ## Preferences are non-authoritative
 
 A Preference must not weaken confirmation, security, privacy, provenance, or Governance controls.
@@ -191,22 +199,23 @@ Event-driven review is usually preferable to arbitrary calendar churn.
 1. **Governance is write-protected** — authority cannot be self-assigned by the classifier.
 2. **Preferences are non-authoritative** — a Preference cannot bypass Governance, security, privacy, provenance, or confirmation controls.
 3. **Non-Governance can inform, not authorise** — context does not gain authority merely by entering the model's active context.
-4. **Governance remains reviewable** — `Keep` does not mean forever or beyond challenge.
-5. **Governance conflict is explicit** — no silent last-write-wins.
-6. **Fragmented approvals compose** — micro-requests that form one consequential action are assessed together.
-7. **Cumulative drift composes too** — repeated low-risk changes that alter authority or safety trigger consequential review.
-8. **Temporary renewal is bounded** — repeated renewal must eventually force a fresh lifecycle decision.
-9. **Minimise content, preserve control metadata** — never compress away authority, provenance, scope, expiry, or safety qualifiers.
-10. **AI classification is a proposal** — consequential classification needs independent validation.
-11. **Evidence cannot self-attest** — model-generated justification is not independent evidence for authority.
-12. **Uncertainty has concrete triggers** — missing, mismatched, expired, conflicting, unverifiable authority or unclear consequences means stop.
-13. **Ambiguity defaults downward** — when unsure, choose less persistence and less authority.
-14. **Persistence is not prompt injection** — persist carefully, retrieve narrowly.
-15. **Storage must honour lifecycle semantics** — lifecycle decisions must propagate to storage layers under your control.
-16. **Human gates sit at consequential boundaries** — do not create approval fatigue for routine provisional context.
-17. **Independence is structural** — the proposer must not control its own validator or authoriser.
-18. **The model governs itself** — changes to Governance rules follow the same propose/validate/authorise discipline.
-19. **Residual risk stays visible** — mitigations are not guarantees.
+4. **Low persistence is not low injection risk** — short-lived context remains untrusted data while active.
+5. **Governance remains reviewable** — `Keep` does not mean forever or beyond challenge.
+6. **Governance conflict is explicit** — no silent last-write-wins.
+7. **Fragmented approvals compose** — micro-requests that form one consequential action are assessed together.
+8. **Cumulative drift composes too** — repeated low-risk changes that alter authority or safety trigger consequential review.
+9. **Temporary renewal is bounded** — repeated renewal must eventually force a fresh lifecycle decision.
+10. **Minimise content, preserve control metadata** — never compress away authority, provenance, scope, expiry, or safety qualifiers.
+11. **AI classification is a proposal** — consequential classification needs independent validation.
+12. **Evidence cannot self-attest** — model-generated justification is not independent evidence for authority.
+13. **Uncertainty has concrete triggers** — missing, mismatched, expired, conflicting, unverifiable authority or unclear consequences means stop.
+14. **Ambiguity defaults downward** — when unsure, choose less persistence and less authority.
+15. **Persistence is not prompt injection** — persist carefully, retrieve narrowly.
+16. **Storage must honour lifecycle semantics** — lifecycle decisions must propagate to storage layers under your control.
+17. **Human gates sit at consequential boundaries** — do not create approval fatigue for routine provisional context.
+18. **Independence is structural** — the proposer must not control its own validator or authoriser.
+19. **The model governs itself** — changes to Governance rules follow the same propose/validate/authorise discipline.
+20. **Residual risk stays visible** — mitigations are not guarantees.
 
 ## Core files
 
@@ -238,16 +247,17 @@ This repository defines policy and lifecycle semantics. It does not prove that a
 6. If proposed as Governance, require explicit approval and identifiable supporting evidence.
 7. If proposed as Preference, verify it does not alter authority or weaken controls.
 8. Treat all non-Governance context as informative, not authoritative, when it is retrieved into active context.
-9. If classification is ambiguous, default downward and attach a review condition.
-10. For Temporary items, define expiry and renewal triggers.
-11. During minimisation, preserve authority, provenance, scope, expiry, and safety qualifiers.
-12. Do not inject persistent material into active context unless needed for the current task.
-13. Put consequential rules behind real enforcement where consequences justify it.
-14. Ensure storage lifecycle mechanics honour Temporary and Remove decisions as far as the underlying systems allow.
-15. Review Governance conflicts explicitly rather than using recency as authority.
-16. Review changes as diffs rather than silent replacements.
-17. Apply the same Governance discipline to changes in this operating model itself.
-18. Re-run review when a trigger fires, cumulative drift crosses a consequential boundary, or Temporary renewal reaches its forcing condition.
+9. Treat untrusted Ephemera and provisional context as data rather than instructions, regardless of how short-lived they are.
+10. If classification is ambiguous, default downward and attach a review condition.
+11. For Temporary items, define expiry and renewal triggers.
+12. During minimisation, preserve authority, provenance, scope, expiry, and safety qualifiers.
+13. Do not inject persistent material into active context unless needed for the current task.
+14. Put consequential rules behind real enforcement where consequences justify it.
+15. Ensure storage lifecycle mechanics honour Temporary and Remove decisions as far as the underlying systems allow.
+16. Review Governance conflicts explicitly rather than using recency as authority.
+17. Review changes as diffs rather than silent replacements.
+18. Apply the same Governance discipline to changes in this operating model itself.
+19. Re-run review when a trigger fires, cumulative drift crosses a consequential boundary, or Temporary renewal reaches its forcing condition.
 
 ## Privacy warning
 
