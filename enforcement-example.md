@@ -14,6 +14,21 @@ For a personal or lightweight workflow:
 
 This is behavioural guidance. It can improve compliance, but it is not a security boundary.
 
+## Provisional fast path
+
+Low-risk context may be classified provisionally without stopping the workflow for immediate approval.
+
+Provisional context must not silently gain higher authority merely because it has been stored or repeatedly retrieved.
+
+Require a stronger gate when crossing into:
+
+- Governance
+- consequential use
+- publication
+- destructive or metered action
+- sensitive-data access
+- other high-impact boundaries
+
 ## Governance-promotion rule
 
 > Do not promote raw context, Operating Context, Preferences, or Ephemera into Governance automatically. Treat AI-generated `Class`, `Function`, and `Persistence` values as proposals. New Governance entries require explicit human approval.
@@ -24,6 +39,12 @@ For a production system:
 
 ```text
 proposal = classify(memory_item)
+
+if proposal.is_ambiguous:
+    proposal = downgrade_persistence_and_authority(proposal)
+    attach_review_trigger(proposal)
+
+store_as_provisional(proposal)
 
 if proposal.class == "Governance":
     require human_approval_for_governance_write
@@ -45,7 +66,7 @@ else:
 
 The important part is not the pseudocode.
 
-The important part is that the execution or persistence boundary itself refuses the action or Governance write unless the required approval state exists.
+The important part is that the execution or persistence boundary itself refuses the consequential action or Governance write unless the required approval state exists.
 
 ## Minimisation boundary
 
@@ -59,15 +80,43 @@ Content can be summarised or reduced, but the minimised form must preserve:
 
 Do not compress away the control boundary.
 
+## Prompt-context boundary
+
+Persistence does not mean every stored item should be injected into every prompt.
+
+Retrieve only the context needed for the current decision. Keep lifecycle, provenance, approval, and other policy metadata outside the active prompt where possible unless the model needs that metadata to reason safely about the current action.
+
+## Storage lifecycle boundary
+
+A policy decision must be reflected in the systems that can still retrieve the item.
+
+For real memory infrastructure:
+
+```text
+if memory.persistence == "Temporary":
+    apply_expiry_or_review_trigger(memory)
+
+if memory.persistence == "Remove":
+    remove_from_primary_store(memory)
+    remove_or_invalidate_applicable_embeddings(memory)
+    remove_or_invalidate_applicable_indexes(memory)
+    remove_or_invalidate_applicable_caches(memory)
+    handle_derived_stores_and_replicas(memory)
+```
+
+The exact implementation will vary. The principle is that a `Remove` label in documentation is not enough if the item remains retrievable elsewhere.
+
 ## Practical boundary
 
 Use prompt/context rules for:
+
 - behavioural defaults
 - review discipline
-- low-risk workflow guidance
+- low-risk provisional classification
 - explicit uncertainty handling
 
-Use application or middleware controls for:
+Use application, storage, or middleware controls for:
+
 - spending limits
 - destructive actions
 - Governance writes
@@ -75,5 +124,6 @@ Use application or middleware controls for:
 - customer-data access
 - security-sensitive operations
 - external side effects
+- expiry and deletion mechanics
 
 The more consequential the action, the less appropriate it is to rely on memory text alone.
