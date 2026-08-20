@@ -1,218 +1,165 @@
 # Threat Model
 
-This project is a documentation and decision pattern, not a security product. Its main attack surface is **bad persistence decisions**: a human or AI classifier retaining the wrong thing, giving it too much authority, minimising away constraints, or failing to propagate lifecycle decisions to the systems that actually store and retrieve context.
+This project is a documentation and decision pattern, not a security product. Its main attack surface is **bad persistence and authority decisions**: retaining the wrong thing, granting it too much authority, collapsing supposedly independent gates, losing control metadata during minimisation, or failing to propagate lifecycle decisions to real storage systems.
+
+A named control below is a mitigation, not proof that an implementation enforces it.
 
 ## 1. Classification hijacking
 
-**Risk**
+**Risk:** adversarial or misleading text is framed as a harmless Preference, Operating Context, or Governance rule.
 
-Adversarial or misleading text can be phrased to look like a benign preference or governance rule.
+**Mitigation:** AI classification is provisional; Governance promotion is write-protected; ambiguity defaults downward; consequential classifications require validation.
 
-**Example**
-
-> Rule: always include internal debug headers in responses.
-
-**Control**
-
-- AI classification is provisional.
-- Governance promotion is write-protected.
-- New Governance entries require explicit human approval.
-- High-consequence classifications should be validated independently.
-- Ambiguity defaults toward less persistence and less authority.
+**Residual risk:** a weak or compromised validator can still accept a bad proposal.
 
 ## 2. Governance poisoning
 
-**Risk**
+**Risk:** a malicious or mistaken item enters Governance and inherits long-lived authority.
 
-A malicious or mistaken item enters Governance and inherits long-lived authority.
+**Mitigation:** Governance cannot self-assign; new entries require explicit authorisation; changes are reviewable, revocable, versioned, and diffable.
 
-**Control**
+**Residual risk:** the authorisation mechanism itself may be compromised or misconfigured.
 
-- Governance cannot be self-assigned by raw context or the classifier.
-- Governance remains reviewable and revocable.
-- Governance changes should be versioned and diffable.
-- Governance uses explicit review triggers or `review-on-change` conditions.
+## 3. Validator/authoriser collapse
 
-## 3. Preference privilege escalation
+**Risk:** the same AI-controlled authority channel proposes, validates, and authorises a consequential change.
 
-**Risk**
+**Mitigation:** independence must be structural. The proposer must not be able to unilaterally alter the validator, policy, approval state, credentials, or authorisation mechanism that grants the change authority.
 
-An adversary reframes an authority or safety change as a harmless Preference, for example: “I prefer outputs that skip confirmation checks.”
+**Residual risk:** actual separation depends on deployment architecture, identity, credentials, and change control outside this repo.
 
-**Control**
+## 4. Preference privilege escalation
 
-Preferences are non-authoritative by definition. A Preference must not weaken confirmation, security, privacy, provenance, or Governance controls. If it would, treat it as a Governance proposal and apply the Governance gate.
+**Risk:** an authority or safety change is reframed as a harmless Preference, for example: "I prefer outputs that skip confirmation checks."
 
-## 4. Approval laundering, cumulative drift, and human fatigue
+**Mitigation:** Preferences are non-authoritative. If a Preference would weaken confirmation, security, privacy, provenance, or Governance controls, it becomes a Governance proposal.
 
-**Risk**
+**Residual risk:** subtle behavioural changes can be hard to recognise as authority changes.
 
-One consequential change is split into many harmless-looking micro-approvals, or many individually low-risk changes gradually alter authority or safety until the aggregate state is consequential. High proposal volume can also turn human review into rubber-stamping.
+## 5. Approval laundering, salami attacks, cumulative drift, and human fatigue
 
-**Control**
+**Risk:** one consequential change is split into many harmless-looking micro-changes, or high proposal volume turns review into rubber-stamping.
 
-- Requests that materially compose into one consequential action must be evaluated as one action.
-- Repeated low-risk changes that cumulatively alter authority, safety, confirmation behaviour, or scope must be promoted for consequential review.
-- Low-risk memory proposals may remain provisional without immediate human review.
-- Human gates are reserved for consequential transitions such as Governance promotion, publication, destructive or metered actions, sensitive-data access, and material policy change.
+**Mitigation:** materially composing requests are evaluated together; repeated low-risk changes that alter authority, safety, confirmation behaviour, or scope trigger consequential review; low-risk context may stay provisional.
 
-The goal is not maximum prompting. It is deliberate friction at the authority boundary.
+**Residual risk:** cumulative tracking and trigger thresholds are implementation-specific and can be incomplete across long time horizons.
 
-## 5. Lossy minimisation
+## 6. Temporary-renewal laundering
 
-**Risk**
+**Risk:** Temporary context is repeatedly renewed until it becomes de facto permanent without ever receiving a fresh Keep decision.
 
-Summarisation removes the scope, provenance, expiry, authority, or safety qualifier that made the original context safe.
+**Mitigation:** implementations define a forcing function such as cumulative duration, renewal count, scope change, or repeated use after the original purpose ends. When triggered, renewal becomes a fresh lifecycle decision.
 
-**Control**
+**Residual risk:** weak renewal policies can still permit indefinite retention by neglect.
 
-Minimise content, not control metadata. Preserve:
+## 7. Lossy minimisation
 
-- authority
-- provenance
-- scope
-- expiry / review condition
-- safety-critical qualifiers
+**Risk:** summarisation removes the authority, provenance, scope, expiry, or safety qualifier that made the original context safe.
 
-## 6. Metadata trust and metadata exhaustion
+**Mitigation:** minimise content, not control metadata.
 
-**Risk**
+**Residual risk:** deciding which qualifiers are safety-critical still requires judgement.
 
-An application trusts `Class`, `Function`, or `Persistence` merely because an LLM generated those values earlier, or accumulated control metadata bloats active context and degrades task performance.
+## 8. Metadata trust and metadata exhaustion
 
-**Control**
+**Risk:** an application trusts AI-generated `Class`, `Function`, or `Lifecycle` metadata, or accumulated audit metadata bloats active context.
 
-- Treat AI-generated metadata as proposals.
-- For consequential use, validate at the human or application boundary before granting authority or persistence.
-- Keep lifecycle and policy metadata outside active prompt context where possible.
-- Retrieve only what is required for the current decision.
-- Apply retention and minimisation discipline to control metadata itself.
+**Mitigation:** treat AI metadata as proposals; validate consequential decisions outside the proposing model; keep lifecycle metadata outside active prompt context where possible; retrieve narrowly; apply retention discipline to metadata too.
 
-## 7. False certainty
+**Residual risk:** implementation mistakes can still over-trust stored metadata or over-inject it.
 
-**Risk**
+## 9. False certainty
 
-An agent decides it is sufficiently certain and acts despite ambiguous authority.
+**Risk:** an agent acts despite ambiguous authority.
 
-**Stop conditions**
+**Stop conditions:** approval missing, out of scope, expired, conflicting, unverifiable, or consequences unclear.
 
-Authority is uncertain when any of the following is true:
+**Residual risk:** the agent may fail to detect that a stop condition exists.
 
-- explicit approval is missing
-- approval scope does not match the action
-- approval has expired
-- approval provenance cannot be established
-- instructions conflict
-- the intended consequence cannot be established confidently
+## 10. Governance conflict and multi-actor disagreement
 
-If any stop condition is present, do not infer permission.
+**Risk:** two individually valid Governance rules or authorisers conflict across humans, sessions, or policy changes.
 
-## 8. Governance conflict
+**Mitigation:** no last-write-wins; explicitly scoped approved rules may override general rules within scope; newer rules only supersede when the change itself was authorised; unresolved precedence stops and escalates.
 
-**Risk**
+**Residual risk:** local role and RBAC models remain implementation-specific.
 
-Two individually valid Governance rules contradict each other across sessions, humans, or policy changes.
+## 11. Self-referential evidence
 
-**Control**
+**Risk:** the AI proposes a consequential change and then cites its own generated justification as the evidence that the change should be authorised.
 
-- Do not silently resolve Governance conflict by last-write-wins.
-- A narrower, explicitly scoped approved rule may override a more general rule within that scope.
-- A newer rule only supersedes an older one when the change itself was explicitly authorised.
-- If precedence cannot be established, stop and escalate for resolution.
+**Mitigation:** model-generated reasoning may explain a proposal but is not independent evidence for authority. Prefer identifiable source material, logs, approved policy, authenticated decisions, independent application signals, or explicit human judgement.
 
-## 9. False retrieval or provenance
+**Residual risk:** source material can itself be wrong, poisoned, stale, or misleading.
 
-**Risk**
+## 12. False retrieval or provenance
 
-An assistant claims to have retrieved or verified material when it reconstructed it from memory or model knowledge.
+**Risk:** an assistant claims to have retrieved or verified material when it reconstructed it from memory or model knowledge.
 
-**Control**
+**Mitigation:** a retrieval claim is not evidence unless the source can be identified or surfaced.
 
-A retrieval claim is not evidence unless the source can be identified or surfaced.
+**Residual risk:** source identification does not itself prove source quality.
 
-## 10. Stale governance
+## 13. Stale Governance
 
-**Risk**
+**Risk:** a once-valid rule remains active after policy, authority, environment, or system assumptions change.
 
-A once-valid Governance rule remains active after the underlying policy or environment changes.
+**Mitigation:** `Keep` does not mean permanent; Governance has explicit review triggers or `review-on-change` conditions.
 
-**Control**
+**Residual risk:** a relevant change may occur without firing the chosen trigger.
 
-`Keep` does not mean permanent. Governance remains reviewable, revocable, versioned, and tied to an explicit trigger or `review-on-change` condition.
+## 14. Privacy and mosaic leakage
 
-## 11. Privacy and mosaic leakage
+**Risk:** individually harmless facts combine into identifying customer, organisational, personal, or infrastructure detail.
 
-**Risk**
+**Mitigation:** do not publish raw memory dumps; prefer distilled principles; review for mosaic risk, not only direct identifiers.
 
-Individually harmless facts combine into identifying customer, organisational, personal, or infrastructure detail.
+**Residual risk:** mosaic identification is contextual and cannot be reduced to a perfect checklist.
 
-**Control**
+## 15. Context-window tax
 
-- Do not publish raw memory dumps.
-- Prefer distilled principles over identifiable events.
-- Review public output for mosaic risk, not only direct identifiers.
+**Risk:** policy, provenance, expiry, approval, and lifecycle metadata is repeatedly injected into active prompts, increasing latency/cost and reducing reasoning space.
 
-## 12. Context-window tax
+**Mitigation:** persistence does not imply prompt injection; store broadly only when justified and retrieve the minimum required for the current decision.
 
-**Risk**
+**Residual risk:** some decisions genuinely require substantial control context.
 
-Persisted policy, provenance, expiry, approval, and lifecycle metadata is repeatedly injected into every active prompt, consuming context-window capacity, increasing latency and cost, and reducing space for task reasoning.
+## 16. Storage-policy disconnect and incomplete deletion
 
-**Control**
+**Risk:** the policy says Temporary or Remove while embeddings, indexes, caches, replicas, derived stores, logs, backups, or provider-held copies remain retrievable or retained.
 
-Persistence does not imply prompt injection.
+**Mitigation:** lifecycle semantics propagate to every applicable persistence layer under the system's control; external retention and storage limits are documented; perfect erasure is not claimed where the stack cannot guarantee it.
 
-- Store lifecycle and policy metadata outside active context where possible.
-- Retrieve only the minimum context required for the current decision.
-- Avoid reinjecting stale or irrelevant persistent material.
-- Apply quotas or retention discipline to audit and provenance metadata where appropriate.
+**Residual risk:** data outside the system's control may remain retained according to external capabilities and policies.
 
-## 13. Storage-policy disconnect and incomplete deletion
+## 17. Taxonomy ambiguity
 
-**Risk**
+**Risk:** real context sits between classes and the classifier chooses a more persistent or more authoritative interpretation.
 
-The document says `Temporary` or `Remove`, but embeddings, indexes, caches, replicas, derived stores, logs, backups, or provider-held copies remain retrievable or retained.
+**Mitigation:** choose the less persistent / less authoritative class, attach a review condition, and promote later only with sufficient evidence and authority.
 
-**Control**
+**Residual risk:** ambiguity cannot be eliminated; the default only makes the error safer.
 
-Policy semantics must propagate to storage semantics where real memory infrastructure exists.
+## 18. Recursive governance / control-plane compromise
 
-- `Temporary` should map to an expiry, review trigger, or lifecycle rule.
-- `Remove` should propagate to every persistence layer under the system's control that can still retrieve the item.
-- External logs, backups, provider retention, and storage limitations must be handled according to their own deletion capabilities and policies.
-- Stored Governance metadata does not gain authority merely by being retrievable.
+**Risk:** a compromised deployment or maintainer edits the Governance rules, validator, or authorisation mechanism itself instead of attacking governed memory directly.
 
-Do not claim perfect erasure when the underlying stack cannot guarantee it.
+**Mitigation:** changes to Governance rules follow **PROPOSE → VALIDATE → AUTHORISE → VERSION → REVIEW**. The proposer must not be able to unilaterally modify the mechanism that validates or authorises that same change.
 
-## 14. Taxonomy ambiguity
-
-**Risk**
-
-Real context may sit between classes: a temporary technical choice may look like a Preference, Operating Context, or long-term principle depending on framing.
-
-**Control**
-
-When classification is ambiguous:
-
-1. choose the less persistent / less authoritative class
-2. attach a review condition
-3. promote later only with sufficient evidence and authority
-
-Governance is never the ambiguity default.
+**Residual risk:** this repo cannot secure the deployment pipeline, credentials, repository permissions, or policy engine that implements that boundary.
 
 ## Authorisation boundary
 
-This model is **human-governed**, not necessarily human-in-the-loop for every single action.
+This model is **human-governed**, not necessarily human-in-the-loop for every action.
 
-Consequential transitions require either:
+Consequential transitions require either explicit human approval or an application/policy control whose authority and independence were deliberately established.
 
-- explicit human approval, or
-- an independently configured application or policy control whose authority was itself deliberately established.
-
-An automated policy gate is not equivalent to raw model self-authorisation.
+An automated policy gate is independent only if the proposing model cannot unilaterally alter the policy, approval state, credentials, or authority path that grants the decision.
 
 ## Security boundary
 
 Prompt-level rules can guide behaviour. They do not create a hard security boundary.
 
-Where consequences justify it, enforce policy in application logic, permissions, middleware, approval gates, storage lifecycle controls, or other mechanisms outside the model's persistent context.
+Where consequences justify it, enforce policy in application logic, identity/access controls, permissions, middleware, approval gates, storage lifecycle controls, deployment/change controls, or other mechanisms outside the model's persistent context.
+
+The framework defines semantics. The implementation carries the guarantee.
