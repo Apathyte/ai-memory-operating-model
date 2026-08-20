@@ -98,6 +98,20 @@ These are **not the entire dataset**. They are the clearest reusable controls fr
 8. **Separation**  
    Governance, facts, preferences, and transient context are different classes.
 
+## Core controls vs principles worth persisting
+
+The repo deliberately keeps two different outputs separate.
+
+[`sanitised-memory.md`](sanitised-memory.md) contains the **memory-governance core**: controls directly related to persistence, authority, privacy, provenance, evidence, retrieval, capability honesty, and consequential action.
+
+[`principles-worth-persisting.md`](principles-worth-persisting.md) contains **sanitised examples of useful non-core principles that survived the same classification process**. These include things like `HARD / INFER / UNKNOWN`, operational truth, authority mapping, security-before-joke, and other stable working principles.
+
+That separation is intentional:
+
+> The model decides what deserves persistence. The companion file shows examples of the kind of value that may survive that decision.
+
+This keeps the taxonomy clean without throwing away useful context simply because it is not itself a memory-governance control.
+
 ## Worked examples
 
 See [`classification-examples.md`](classification-examples.md).
