@@ -14,9 +14,11 @@ A named control below is a mitigation, not proof that an implementation enforces
 
 ## 2. Non-Governance execution influence
 
-**Risk:** content classified as Preference, Operating Context, or other non-Governance data still influences model generation when injected into active context. A label alone does not neutralise token-level influence.
+**Risk:** content classified as Preference, Operating Context, Ephemera, or other non-Governance data still influences model generation when injected into active context. A label alone does not neutralise token-level influence.
 
 **Mitigation:** only Governance may grant or modify authority. Non-Governance context may inform reasoning but must not grant permission, weaken confirmation or safety controls, override Governance, or become authoritative merely because it is retrieved. Where possible, keep untrusted/provisional data structurally separate from policy/control instructions.
+
+**Low persistence is not low injection risk:** Ephemera and provisional Operating Context can still carry adversarial instructions while active. Treat them as untrusted data by default, not instructions, and do not reduce injection scrutiny merely because they are short-lived or scheduled for removal.
 
 **Residual risk:** some model interfaces ultimately flatten instructions and data into one context stream, so implementation discipline and prompt assembly remain load-bearing.
 
