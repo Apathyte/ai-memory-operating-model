@@ -12,10 +12,11 @@ These examples show the classification process rather than only the final table.
 
 - Stable across projects
 - Directly changes assistant behaviour
-- Low privacy risk once generalized
+- Low privacy risk once generalised
 - High consequence if ignored
+- Governance authority must not be self-assigned
 
-**Class**
+**Proposed class**
 
 Governance
 
@@ -25,7 +26,11 @@ Governance
 
 **Persistence**
 
-Keep
+Keep, subject to human approval and review-on-change
+
+**Authorisation**
+
+Explicit human approval required before promotion into Governance.
 
 **Public form**
 
@@ -47,7 +52,7 @@ Keep
 - Contains a reusable architectural lesson
 - Raw form should not persist publicly
 
-**Class**
+**Proposed class**
 
 Operating Context
 
@@ -58,6 +63,10 @@ Architecture
 **Persistence**
 
 Temporary internally; Remove from public memory in raw form
+
+**Lifecycle**
+
+Attach a project-close or architecture-change review trigger. A Remove decision must also cover any applicable derived store if this context is persisted outside the conversation layer.
 
 **Public form**
 
@@ -80,7 +89,7 @@ The private event is discarded. The reusable lesson survives.
 - Not operationally useful
 - Persistence creates noise
 
-**Class**
+**Proposed class**
 
 Ephemera
 
@@ -91,6 +100,10 @@ Miscellaneous
 **Persistence**
 
 Remove
+
+**Active-context need**
+
+None after the conversation where it was useful.
 
 **Public form**
 
@@ -113,7 +126,7 @@ The correct output of classification is sometimes deletion.
 - Materially improves generated writing
 - Easy to override when needed
 
-**Class**
+**Proposed class**
 
 Preference
 
@@ -125,6 +138,54 @@ Writing
 
 Keep
 
+**Active-context need**
+
+Retrieve or inject only when generating relevant authored material; persistence does not require constant prompt presence.
+
 **Public form**
 
 A generic style preference is safe to retain if it consistently improves output.
+
+---
+
+## Example 5: Ambiguity defaults downward
+
+**Raw memory**
+
+> Let's use PostgreSQL for this sprint.
+
+**Assessment**
+
+This could be misread as:
+
+- a stable technical Preference
+- current Operating Context
+- a durable architecture principle
+
+The wording only establishes a sprint-scoped decision.
+
+**Proposed class**
+
+Operating Context
+
+**Function**
+
+Architecture / Delivery
+
+**Persistence**
+
+Temporary
+
+**Review trigger**
+
+Sprint end or architecture decision change.
+
+**Why not Preference?**
+
+There is not enough evidence that this is a stable human preference.
+
+**Why not Governance?**
+
+Nothing in the statement grants policy authority.
+
+When the evidence is ambiguous, choose the less persistent / less authoritative class and promote later only if new evidence justifies it.
