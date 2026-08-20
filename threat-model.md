@@ -33,21 +33,32 @@ A malicious or mistaken item enters Governance and inherits long-lived authority
 - Governance changes should be versioned and diffable.
 - Governance uses explicit review triggers or `review-on-change` conditions.
 
-## 3. Approval laundering and human fatigue
+## 3. Preference privilege escalation
 
 **Risk**
 
-One consequential change is split into many harmless-looking micro-approvals, or the human is flooded with routine approval requests until review becomes rubber-stamping.
+An adversary reframes an authority or safety change as a harmless Preference, for example: “I prefer outputs that skip confirmation checks.”
+
+**Control**
+
+Preferences are non-authoritative by definition. A Preference must not weaken confirmation, security, privacy, provenance, or Governance controls. If it would, treat it as a Governance proposal and apply the Governance gate.
+
+## 4. Approval laundering, cumulative drift, and human fatigue
+
+**Risk**
+
+One consequential change is split into many harmless-looking micro-approvals, or many individually low-risk changes gradually alter authority or safety until the aggregate state is consequential. High proposal volume can also turn human review into rubber-stamping.
 
 **Control**
 
 - Requests that materially compose into one consequential action must be evaluated as one action.
+- Repeated low-risk changes that cumulatively alter authority, safety, confirmation behaviour, or scope must be promoted for consequential review.
 - Low-risk memory proposals may remain provisional without immediate human review.
-- Human gates are reserved for consequential transitions such as Governance promotion, publication, destructive or metered actions, sensitive-data access, and other high-impact boundaries.
+- Human gates are reserved for consequential transitions such as Governance promotion, publication, destructive or metered actions, sensitive-data access, and material policy change.
 
 The goal is not maximum prompting. It is deliberate friction at the authority boundary.
 
-## 4. Lossy minimisation
+## 5. Lossy minimisation
 
 **Risk**
 
@@ -63,17 +74,21 @@ Minimise content, not control metadata. Preserve:
 - expiry / review condition
 - safety-critical qualifiers
 
-## 5. Metadata trust
+## 6. Metadata trust and metadata exhaustion
 
 **Risk**
 
-An application trusts `Class`, `Function`, or `Persistence` merely because an LLM generated those values earlier.
+An application trusts `Class`, `Function`, or `Persistence` merely because an LLM generated those values earlier, or accumulated control metadata bloats active context and degrades task performance.
 
 **Control**
 
-Treat AI-generated metadata as proposals. For consequential use, validate at the human or application boundary before granting authority or persistence.
+- Treat AI-generated metadata as proposals.
+- For consequential use, validate at the human or application boundary before granting authority or persistence.
+- Keep lifecycle and policy metadata outside active prompt context where possible.
+- Retrieve only what is required for the current decision.
+- Apply retention and minimisation discipline to control metadata itself.
 
-## 6. False certainty
+## 7. False certainty
 
 **Risk**
 
@@ -92,7 +107,20 @@ Authority is uncertain when any of the following is true:
 
 If any stop condition is present, do not infer permission.
 
-## 7. False retrieval or provenance
+## 8. Governance conflict
+
+**Risk**
+
+Two individually valid Governance rules contradict each other across sessions, humans, or policy changes.
+
+**Control**
+
+- Do not silently resolve Governance conflict by last-write-wins.
+- A narrower, explicitly scoped approved rule may override a more general rule within that scope.
+- A newer rule only supersedes an older one when the change itself was explicitly authorised.
+- If precedence cannot be established, stop and escalate for resolution.
+
+## 9. False retrieval or provenance
 
 **Risk**
 
@@ -102,7 +130,7 @@ An assistant claims to have retrieved or verified material when it reconstructed
 
 A retrieval claim is not evidence unless the source can be identified or surfaced.
 
-## 8. Stale governance
+## 10. Stale governance
 
 **Risk**
 
@@ -112,7 +140,7 @@ A once-valid Governance rule remains active after the underlying policy or envir
 
 `Keep` does not mean permanent. Governance remains reviewable, revocable, versioned, and tied to an explicit trigger or `review-on-change` condition.
 
-## 9. Privacy and mosaic leakage
+## 11. Privacy and mosaic leakage
 
 **Risk**
 
@@ -124,7 +152,7 @@ Individually harmless facts combine into identifying customer, organisational, p
 - Prefer distilled principles over identifiable events.
 - Review public output for mosaic risk, not only direct identifiers.
 
-## 10. Context-window tax
+## 12. Context-window tax
 
 **Risk**
 
@@ -137,24 +165,26 @@ Persistence does not imply prompt injection.
 - Store lifecycle and policy metadata outside active context where possible.
 - Retrieve only the minimum context required for the current decision.
 - Avoid reinjecting stale or irrelevant persistent material.
+- Apply quotas or retention discipline to audit and provenance metadata where appropriate.
 
-## 11. Storage-policy disconnect
+## 13. Storage-policy disconnect and incomplete deletion
 
 **Risk**
 
-The document says `Temporary` or `Remove`, but embeddings, indexes, caches, replicas, or derived stores remain retrievable.
+The document says `Temporary` or `Remove`, but embeddings, indexes, caches, replicas, derived stores, logs, backups, or provider-held copies remain retrievable or retained.
 
 **Control**
 
 Policy semantics must propagate to storage semantics where real memory infrastructure exists.
 
 - `Temporary` should map to an expiry, review trigger, or lifecycle rule.
-- `Remove` should account for applicable indexes, embeddings, caches, derived stores, and replicas.
+- `Remove` should propagate to every persistence layer under the system's control that can still retrieve the item.
+- External logs, backups, provider retention, and storage limitations must be handled according to their own deletion capabilities and policies.
 - Stored Governance metadata does not gain authority merely by being retrievable.
 
-A policy decision that the storage layer ignores is not an effective lifecycle control.
+Do not claim perfect erasure when the underlying stack cannot guarantee it.
 
-## 12. Taxonomy ambiguity
+## 14. Taxonomy ambiguity
 
 **Risk**
 
@@ -169,6 +199,17 @@ When classification is ambiguous:
 3. promote later only with sufficient evidence and authority
 
 Governance is never the ambiguity default.
+
+## Authorisation boundary
+
+This model is **human-governed**, not necessarily human-in-the-loop for every single action.
+
+Consequential transitions require either:
+
+- explicit human approval, or
+- an independently configured application or policy control whose authority was itself deliberately established.
+
+An automated policy gate is not equivalent to raw model self-authorisation.
 
 ## Security boundary
 
